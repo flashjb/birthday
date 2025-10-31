@@ -183,6 +183,15 @@
 
             function play(){
                 reset()
+                const wordPositions = [
+                    { x:-22,  y: 5.8, z: 0 },
+                    { y: 4.9, z: -0.1 },
+                    { y: 4.6, z: 0.1 },
+                    { x:-22, y: 3.9, z: -0.2 },
+                    { y: 3.3, z: 0.2 },
+                    { y: 3.6, z: 0 }
+                ]
+
                 const tl=gsap.timeline({defaults:{ease:'power3.out'},timeScale:speed.value})
 
                 tl.fromTo(heroCat.position,{x:4.2,y:6.2},{x:0.85,y:2.15,z:0.2,duration:1.25,ease:'power2.in'})
@@ -196,7 +205,7 @@
 
                 const words=wordsText.value.split(',').map(s=>s.trim()).filter(Boolean)
                 const spacing=.8
-                const letterSpacing=.65
+                const letterSpacing=.45
                 clones.forEach(m=>catsLayer.remove(m)); clones=[]
                 allLetterGroups=[]
 
@@ -225,7 +234,8 @@
                         .to(m.position,{y:5.0,x:landX*0.8,z:1.0,duration:0.9,ease:'power2.out'},"<+0.05")
                         .to(m.scale,{x:1.1,y:1.1,duration:0.4,ease:'back.out(2)'}, "<")
                         .add(()=>{
-                            const g=lettersPop(words[i],landX,letterSpacing)
+                            const pos = wordPositions[i] || { y: 4.8, z: 0 }
+                            const g = lettersPop(words[i], landX, letterSpacing, pos)
                             catsLayer.add(g)
                             allLetterGroups.push(g)
                             confettisBurst()
@@ -240,17 +250,35 @@
                     .add(()=>{followTargetY=4.0},"<+0.2")
             }
 
-            function lettersPop(word,baseX,letterSpacing){
-                const letters=word.split('')
-                const group=new THREE.Group()
-                const easeWord=word.length>5?"back.out(2)":"bounce.out"
-                letters.forEach((ch,i)=>{
-                    const s=makeLetterSprite(ch||' ')
-                    s.position.set(baseX+i*letterSpacing,4.8,0)
+            function lettersPop(word, baseX, letterSpacing, pos = { y: 3.5, z: -0.5 }) {
+                const letters = word.split('')
+                const group = new THREE.Group()
+                const easeWord = word.length > 5 ? "back.out(2)" : "bounce.out"
+                letters.forEach((ch, i) => {
+                    const s = makeLetterSprite(ch || ' ')
+                    s.position.set(baseX + i * letterSpacing, pos.y, pos.z)
                     s.scale.multiplyScalar(1.25)
                     group.add(s)
-                    s.material.opacity=1
-                    gsap.fromTo(s.scale,{x:0,y:0},{x:1,y:1,duration:0.42,ease:easeWord,delay:i*0.05})
+                    s.material.opacity = 1
+                    gsap.fromTo(s.scale, { x: 0, y: 0 }, { x: 1, y: 1, duration: 0.42, ease: easeWord, delay: i * 0.05 })
+
+
+                    // 🪶 animation de "flottement" subtile avant disparition
+                    const driftX = (Math.random() - 0.5) * 0.3
+                    const driftY = 0.3 + Math.random() * 0.4
+                    gsap.to(s.position, {
+                        x: s.position.x + driftX,
+                        y: s.position.y + driftY,
+                        duration: 3.5,
+                        ease: "sine.inOut",
+                        delay: 1.2 + i * 0.05
+                    })
+                    gsap.to(s.material, {
+                        opacity: 0,
+                        duration: 2.8,
+                        ease: "sine.inOut",
+                        delay: 1.5 + i * 0.05
+                    })
                 })
                 return group
             }
