@@ -33,7 +33,7 @@
         canvas{position:absolute;inset:0;display:block;z-index:1}
         .hud{position:absolute;left:16px;top:16px;display:flex;gap:8px;z-index:10}
         .hud button{background:var(--panel);color:var(--txt);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:8px 12px;cursor:pointer}
-        .ctrl{position:absolute;right:16px;top:16px;background:var(--panel);backdrop-filter:blur(6px);
+        .ctrl{ display:none;position:absolute;right:16px;top:16px;background:var(--panel);backdrop-filter:blur(6px);
             border:1px solid rgba(255,255,255,.12);padding:10px;border-radius:12px;z-index:10}
         .ctrl label{font-size:12px;opacity:.85}
         .ctrl input[type="text"]{width:280px;background:transparent;border:1px solid rgba(255,255,255,.12);color:var(--txt);border-radius:8px;padding:6px}
@@ -157,7 +157,16 @@
 
                 // Chat principal
                 const heroTex=new THREE.TextureLoader().load('5d1bcb01-f06d-43c3-ae74-9ec0fbf3f9f0.png')
-                heroCat=new THREE.Mesh(new THREE.PlaneGeometry(2,2),new THREE.MeshBasicMaterial({map:heroTex,transparent:true}))
+                heroCat=new THREE.Mesh(
+                    new THREE.PlaneGeometry(2,2),
+                    new THREE.MeshBasicMaterial({
+                        map: heroTex,
+                        transparent: true,
+                        depthTest: false,   // ✅ ne tient plus compte de la profondeur
+                        depthWrite: false,  // ✅ n’affecte pas le buffer de profondeur
+                    })
+                )
+                heroCat.renderOrder = 9999
                 heroCat.position.set(-5.2,3.6,0.2)
                 heroCat.rotation.y=Math.PI/12
                 scene.add(heroCat)
